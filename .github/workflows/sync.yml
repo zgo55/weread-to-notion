@@ -29,7 +29,11 @@ jobs:
         continue-on-error: true
         run: |
           git ls-remote --heads origin data && echo "Data branch exists" || echo "Data branch does NOT exist"
-          git ls-remote --heads origin data && echo "::set-output name=exists::true" || echo "::set-output name=exists::false"
+          if git ls-remote --heads origin data; then
+            echo "exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "exists=false" >> $GITHUB_OUTPUT
+          fi
 
       # 如果数据分支已存在，则检出到.data目录
       - name: Checkout data branch if exists
@@ -106,7 +110,7 @@ jobs:
           mkdir -p main-branch/data/sync-state
 
           # 复制所有数据文件，包括同步状态和数据库版本文件
-          cp -r main-branch/data/* .data-branch/data/ 2>/dev/null || true
+          cp -r main-branch/data/* .data-branch/ 2>/dev/null || true
 
           cd .data-branch
           git config --global user.name "GitHub Actions"
